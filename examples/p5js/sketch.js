@@ -335,7 +335,7 @@ function initSystem() {
 }
 
 function windowResized() {
-    const size = min(windowWidth, windowHeight) * 0.8;
+    const size = min(windowWidth, windowHeight);
     resizeCanvas(size, size);
     genify.reset();
     initSystem();

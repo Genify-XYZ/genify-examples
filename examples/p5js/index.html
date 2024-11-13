@@ -3,13 +3,22 @@
 <head>
     <title>Genify - P5.js Example</title>
     <style>
-        body {
+       html, body {
             margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+        body {
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
             background: #000;
+        }
+        canvas {
+            display: block;
+            max-width: 100% !important;
+            max-height: 100% !important;
         }
     </style>
 </head>
