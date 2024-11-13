@@ -1,19 +1,33 @@
-function init() {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = 800;
-    canvas.height = 800;
-    document.body.appendChild(canvas);
+let canvas, ctx;
 
-    canvas.style.position = 'absolute';
-    canvas.style.left = '50%';
-    canvas.style.top = '50%';
-    canvas.style.transform = 'translate(-50%, -50%)';
+function getSize() {
+    const size = Math.min(window.innerWidth, window.innerHeight);
+    return {
+        width: size,
+        height: size
+    };
+}
+
+function init() {
+    if (!canvas) {
+        canvas = document.createElement('canvas');
+        ctx = canvas.getContext('2d');
+        document.body.appendChild(canvas);
+        
+        canvas.style.position = 'absolute';
+        canvas.style.left = '50%';
+        canvas.style.top = '50%';
+        canvas.style.transform = 'translate(-50%, -50%)';
+    }
+
+    const size = getSize();
+    canvas.width = size.width;
+    canvas.height = size.height;
 
     const baseHue = genify.randInt(0, 360);
     const shapeCount = genify.randInt(5, 10);
     const layerCount = genify.randInt(3, 6);
-    const baseSize = genify.randInt(100, 200);
+    const baseSize = Math.min(size.width, size.height) * 0.15;
     
     ctx.fillStyle = '#111';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -25,9 +39,11 @@ function init() {
         const alpha = genify.randFloat(0.3, 0.7);
         
         for(let i = 0; i < shapeCount; i++) {
-            const x = genify.randInt(0, canvas.width);
-            const y = genify.randInt(0, canvas.height);
-            const size = baseSize * genify.randFloat(0.3, 0.8);
+            const angle = genify.randFloat(0, Math.PI * 2);
+            const distance = Math.min(size.width, size.height) * genify.randFloat(0.1, 0.4);
+            const x = canvas.width/2 + Math.cos(angle) * distance;
+            const y = canvas.height/2 + Math.sin(angle) * distance;
+            const elementSize = baseSize * genify.randFloat(0.3, 0.8);
             const rotation = genify.randFloat(0, Math.PI * 2);
             
             ctx.save();
@@ -37,13 +53,13 @@ function init() {
             const shapeType = genify.choice(['circle', 'glyph', 'line']);
             switch(shapeType) {
                 case 'circle':
-                    drawCircle(ctx, 0, 0, size, hue, alpha);
+                    drawCircle(ctx, 0, 0, elementSize, hue, alpha);
                     break;
                 case 'glyph':
-                    drawGlyph(ctx, 0, 0, size, hue, alpha);
+                    drawGlyph(ctx, 0, 0, elementSize, hue, alpha);
                     break;
                 case 'line':
-                    drawLine(ctx, 0, 0, size, hue, alpha);
+                    drawLine(ctx, 0, 0, elementSize, hue, alpha);
                     break;
             }
             
@@ -109,5 +125,14 @@ function drawLine(ctx, x, y, size, hue, alpha) {
     ctx.lineTo(x + Math.cos(angle) * length/2, y + Math.sin(angle) * length/2);
     ctx.stroke();
 }
+
+let resizeTimeout;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        genify.reset();
+        init();
+    }, 250);
+});
 
 init();

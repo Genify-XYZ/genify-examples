@@ -1,8 +1,25 @@
+let scene, camera, renderer, cube;
+
+function getSize() {
+    const size = Math.min(window.innerWidth, window.innerHeight) * 0.8;
+    return {
+        width: size,
+        height: size
+    };
+}
+
 function init() {
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(800, 800);
+    scene = new THREE.Scene();
+    const size = getSize();
+    
+    camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(size.width, size.height);
+    
+    renderer.domElement.style.position = 'absolute';
+    renderer.domElement.style.left = '50%';
+    renderer.domElement.style.top = '50%';
+    renderer.domElement.style.transform = 'translate(-50%, -50%)';
     document.body.appendChild(renderer.domElement);
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); 
@@ -12,6 +29,13 @@ function init() {
     directionalLight.position.set(1, 1, 1);
     scene.add(directionalLight);
 
+    createCube();
+    camera.position.z = 2;
+
+    animate();
+}
+
+function createCube() {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     canvas.width = 512;
@@ -34,17 +58,31 @@ function init() {
         map: texture,
         shininess: 50 
     });
-    const cube = new THREE.Mesh(geometry, material);
+    
+    if (cube) {
+        scene.remove(cube);
+    }
+    
+    cube = new THREE.Mesh(geometry, material);
     scene.add(cube);
-
-    camera.position.z = 2;
 
     genify.setFeatures({
         color: color
     });
+}
 
-    function animate() {
-        requestAnimationFrame(animate);
+function handleResize() {
+    const size = getSize();
+    camera.aspect = 1;
+    camera.updateProjectionMatrix();
+    renderer.setSize(size.width, size.height);
+    genify.reset();
+    createCube();
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    if (cube) {
         cube.rotation.x += 0.01;
         cube.rotation.y += 0.01;
         renderer.render(scene, camera);
@@ -53,8 +91,12 @@ function init() {
             genify.renderDone();
         }
     }
-
-    animate();
 }
+
+let resizeTimeout;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(handleResize, 250);
+});
 
 init();

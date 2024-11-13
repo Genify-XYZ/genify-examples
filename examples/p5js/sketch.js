@@ -4,6 +4,8 @@ let noiseScale;
 let rotationSpeed;
 let subdivisions;
 let particleDensity;
+let baseHue;  
+let scheme;   
 
 function preload() {
     let seed = ~~(genify.random() * 123456789);
@@ -297,7 +299,8 @@ class Particle {
 }
 
 function setup() {
-    createCanvas(800, 800);
+    const size = min(windowWidth, windowHeight) ;
+    createCanvas(size, size);
     colorMode(HSB, 360, 100, 100, 255);
     genify.reset();
 
@@ -306,10 +309,15 @@ function setup() {
     subdivisions = genify.randInt(100, 150);
     particleDensity = genify.randFloat(0.7, 0.9);
 
-    let baseHue = genify.randInt(0, 360);
-    let scheme = genify.choice(['analogous', 'triadic', 'complementary']);
+    baseHue = genify.randInt(0, 360);
+    scheme = genify.choice(['analogous', 'triadic', 'complementary']);
     colorPalette = generateColorPalette(baseHue, scheme);
 
+    initSystem();
+}
+
+
+function initSystem() {
     system = new ParticleSystem();
     background(0, 0, 15);
 
@@ -324,6 +332,13 @@ function setup() {
         particleCount: system.layers.reduce((acc, layer) => 
             acc + layer.particles.length, 0).toString()
     });
+}
+
+function windowResized() {
+    const size = min(windowWidth, windowHeight) * 0.8;
+    resizeCanvas(size, size);
+    genify.reset();
+    initSystem();
 }
 
 function generateColorPalette(baseHue, scheme) {
